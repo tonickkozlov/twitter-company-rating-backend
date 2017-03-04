@@ -8,10 +8,12 @@ from nltk.metrics.distance import edit_distance
 def get_cursored_data(endpoint, *args, **kwargs):
     ' will get a generator for given api endpoint, will respect and retry on rate limiting'
 
-    if 'limit' in kwargs and kwargs['limit'] == 0:
+    limit = kwargs.get('limit')
+    if limit == 0:
         return
 
-    c = tweepy.Cursor(endpoint, *args, **kwargs).items(kwargs.get('limit'))
+    c = tweepy.Cursor(endpoint, *args, **kwargs)
+    c = c.items(limit) if limit else c.items() 
 
     while True:
         try:
@@ -27,13 +29,19 @@ def get_cursored_data(endpoint, *args, **kwargs):
 
 def get_tweets_about_company(api, account, since_id=0, limit=1000, **kwargs):
     ' will give out tweets for ``account`` starting with ``since_id``, and will give out max of ``limit`` results'
-    return get_cursored_data(api.search,
+    tweets_processed = 0
+    for tweet in (get_cursored_data(api.search,
             q='@{0}'.format(account),
             since_id=since_id,
-            limit=limit,
+            # limit=limit,
             include_entities=True,
             lang='en',
-            **kwargs)
+            **kwargs)):
+        if tweets_processed >= limit:
+            break
+        if not tweet.retweeted and not tweet.text.startswith('RT '):
+            yield tweet
+            tweets_processed += 1
 
 
 def get_company_account(api, company_name):
@@ -48,3 +56,10 @@ def get_company_account(api, company_name):
     default_answer = edit_distances.index(min(edit_distances))
 
     return candidates[default_answer]
+
+
+if __name__ == '__main__':
+    from api import api
+    t = get_tweets_about_company(api, 'microsoft')
+    tweet = next(t)
+    print(tweet.text)
