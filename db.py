@@ -32,7 +32,6 @@ def get_company_overall_score(redis_client, account):
 def update_company_overall_score(redis_client, account):
     score = get_company_overall_score(redis_client, account)
     redis_client.set('companyscore:{0}'.format(account), score)
-    print('score updated for', account)
 
 def get_best_tweets(redis_client, account, limit=10):
     return redis_client.zrevrangebyscore('tweetscores:{0}'.format(account), 'inf', '-inf', withscores=True, start=0, num=limit)
@@ -40,22 +39,36 @@ def get_best_tweets(redis_client, account, limit=10):
 def get_worst_tweets(redis_client, account, limit=10):
     return redis_client.zrangebyscore('tweetscores:{0}'.format(account), '-inf', 'inf', withscores=True, start=0, num=limit)
 
+def get_number_of_tweets(redis_client, account):
+    ''' will return number of tweets that's stored and mention `account` '''
+    return redis_client.zcount('tweetsabout:{0}'.format(account), '-inf', 'inf')
+
+def get_oldest_tweets(redis_client, account, num=1):
+    ''' will return ids of oldest tweets '''
+    return redis_client.zrangebyscore('tweetsabout:{0}'.format(account), '-inf', 'inf', start=0, num=num)
+
+def remove_tweets(redis_client, account, *tweets):
+    if len(tweets) == 0:
+        return
+
+    redis_client.zrem('tweetsabout:{0}'.format(account), *tweets)
+    redis_client.zrem('tweetscores:{0}'.format(account), *tweets)
+
 def write_tweet(redis_client, account, tweet, tweet_score):
-    ''' will write tweet data into db '''
+    ''' will write tweet data into db
+        if `remove_oldest` is set, will erase the olders tweet '''
+
     tweet_data = {
         'id': tweet.id,
         'text': tweet.text,
         'entities': json.dumps(tweet.entities),
     }
 
-    pipe = redis_client.pipeline()
-    pipe.multi()
     # keep on instance of a tweet list sorted by id, and another one - by score
-    pipe.zadd('tweetsabout:{0}'.format(account), tweet_data['id'], tweet_data['id'])
-    pipe.zadd('tweetscores:{0}'.format(account), tweet_score, tweet_data['id'])
+    redis_client.zadd('tweetsabout:{0}'.format(account), tweet_data['id'], tweet_data['id'])
+    redis_client.zadd('tweetscores:{0}'.format(account), tweet_score, tweet_data['id'])
     # TODO: do not store original tweets?
-    pipe.hmset('tweet:{0}'.format(tweet_data['id']), tweet_data)
-    pipe.execute()
+    redis_client.hmset('tweet:{0}'.format(tweet_data['id']), tweet_data)
 
 def get_tweet(redis_client, tweet_id):
     fields = ['id', 'text']
