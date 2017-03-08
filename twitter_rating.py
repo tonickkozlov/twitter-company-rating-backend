@@ -1,7 +1,7 @@
 from api import api
 from re import finditer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from tweet_utils import *
+sid = SentimentIntensityAnalyzer()
 
 def camel_case_split(identifier):
     ' will space-separate camel case words '
@@ -14,7 +14,6 @@ def get_sentiment_score(text, entities):
     # get them analyzed by Vader
     hashtags = ' '.join([camel_case_split(hashtag['text']) for hashtag in entities['hashtags']])
 
-    sid = SentimentIntensityAnalyzer()
     return sid.polarity_scores(text + ' ' + hashtags)['compound']
 
 if __name__ == '__main__':
