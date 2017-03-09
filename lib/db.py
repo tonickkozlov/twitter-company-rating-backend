@@ -29,7 +29,6 @@ def get_companies(redis_client):
     ''' will get all companies '''
     return redis_client.smembers('companies')
 
-
 @check_account_exists
 def get_company_details(redis_client, account):
     ''' will get details for a given company '''

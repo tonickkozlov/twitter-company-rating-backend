@@ -1,9 +1,9 @@
 from flask import Flask, jsonify
 from functools import partial
-import db
+from lib import db
 import redis
 
-r = redis.StrictRedis(decode_responses=True)
+r = redis.StrictRedis(host='redis', decode_responses=True)
 
 app = Flask(__name__)
 
@@ -36,6 +36,3 @@ def get_best_tweets(account):
 @app.route("/company/<account>/worst")
 def get_worst_tweets(account):
     return get_tweets_for_account(partial(db.get_best_tweets, r), account) 
-
-if __name__ == "__main__":
-    app.run()

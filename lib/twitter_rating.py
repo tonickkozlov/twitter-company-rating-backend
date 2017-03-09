@@ -1,4 +1,5 @@
-from api import api
+from lib.api import api
+
 from re import finditer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 sid = SentimentIntensityAnalyzer()
@@ -12,7 +13,7 @@ def get_sentiment_score(text, entities):
     # hash tags and camelCase words do not contribute to overall tweet score.
     # So try to extract data from entities and dump it in the end od tweet's text to 
     # get them analyzed by Vader
-    hashtags = ' '.join([camel_case_split(hashtag['text']) for hashtag in entities['hashtags']])
+    hashtags = u' '.join([camel_case_split(hashtag['text']) for hashtag in entities['hashtags']])
 
     return sid.polarity_scores(text + ' ' + hashtags)['compound']
 

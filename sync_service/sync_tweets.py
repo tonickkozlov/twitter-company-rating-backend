@@ -1,7 +1,8 @@
-import db
-import twitter
-from twitter_rating import get_sentiment_score
 from itertools import cycle, islice
+
+from lib import db
+from lib import twitter
+from lib.twitter_rating import get_sentiment_score
 
 def roundrobin(*iterables):
     "roundrobin('ABC', 'D', 'EF') --> A D E B F C"
@@ -39,23 +40,3 @@ def sync_tweets(api, redis_client, account, limit=1000):
 
     db.update_company_overall_score(redis_client, account)
     print('score updated for', account)
-
-if __name__ == '__main__':
-    from api import api
-    import redis
-    import sys
-
-    r = redis.StrictRedis(decode_responses=True)
-    # process all companies if params are not given
-    companies = { sys.argv[1] } if len(sys.argv) > 1 else db.get_companies(r)
-
-    sync_results = [sync_tweets(api, r, account) for account in companies]
-    for result in roundrobin(*sync_results):
-        print('============================================================')
-        print('> account', result['account'])
-        print('------------------------------')
-        print(result['tweet'].id)
-        print(result['tweet'].text.replace('\n', ''))
-        print('------------------------------')
-        print('> score', result['score'])
-        print('> removed', result['removed'])

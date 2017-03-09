@@ -1,0 +1,38 @@
+version: "2"
+services:
+  rating_server:
+    build: rating_server
+    image: rating_server:v1.0
+    container_name: rating_server
+    command: python3 -m rating_server
+    ports:
+      - "5000:5000"
+    stdin_open: true 
+    tty: true
+    links:
+      - redis
+    volumes:
+      - .:/opt/server
+    depends_on:
+      - redis
+  sync_service:
+    build: sync_service
+    image: sync_service:v1.0
+    container_name: sync_service
+    command: /bin/bash ./sync_service/sync_forever.sh
+    environment:
+      - PYTHONIOENCODING=utf-8
+    links:
+      - redis
+    volumes:
+      - .:/opt/server
+    depends_on:
+      - redis
+    stdin_open: true 
+    tty: true
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+

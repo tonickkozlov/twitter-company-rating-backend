@@ -5,7 +5,7 @@ import db
 
 
 if __name__ == '__main__':
-    r = redis.StrictRedis(decode_responses=True)
+    r = redis.StrictRedis(host='redis', decode_responses=True)
     for company in db.get_companies(r):
         print('====================', company, '====================')
         best = db.get_best_tweets(r, company)
