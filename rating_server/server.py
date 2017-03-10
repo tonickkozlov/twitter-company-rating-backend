@@ -12,7 +12,6 @@ def jsonify_tweets(tweet_getter):
     @wraps(tweet_getter)
     def wrapper(*args, **kwargs):
         result = tweet_getter(*args, **kwargs)
-        print('res', result)
         return jsonify({ 'ids': [tweet_id for tweet_id, tweet_score in result] })
 
     return wrapper
