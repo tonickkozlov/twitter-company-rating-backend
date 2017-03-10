@@ -69,9 +69,10 @@ def get_number_of_tweets(redis_client, account):
     return redis_client.zcount('tweetsabout:{0}'.format(account), '-inf', 'inf')
 
 @check_account_exists
-def get_oldest_tweets(redis_client, account, num=1):
-    ''' will return ids of oldest tweets '''
-    return redis_client.zrangebyscore('tweetsabout:{0}'.format(account), '-inf', 'inf', start=0, num=num)
+def get_tweets_timeline(redis_client, account, limit=None):
+    ''' will get ids of tweets in their creation order '''
+    limiting_params = { 'start': 0, 'limit': limit } if limit else {}
+    return redis_client.zrangebyscore('tweetsabout:{0}'.format(account), '-inf', 'inf', withscores=True, **limiting_params)
 
 @check_account_exists
 def remove_tweets(redis_client, account, *tweets):

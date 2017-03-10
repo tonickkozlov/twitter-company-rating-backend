@@ -29,7 +29,7 @@ def sync_tweets(api, redis_client, account, limit=1000):
             pipe.watch('tweetsabout:{0}'.format(account))
             n_tweets = db.get_number_of_tweets(pipe, account)
 
-            tweets_to_remove = db.get_oldest_tweets(pipe, account, 1) if n_tweets >= limit else []
+            tweets_to_remove = db.get_tweets_timeline(pipe, account, 1) if n_tweets >= limit else []
 
             pipe.multi()
             # batch-process insert operation

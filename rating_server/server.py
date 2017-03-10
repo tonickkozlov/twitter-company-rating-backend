@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from functools import partial
+from functools import wraps
 from lib import db
 import redis
 
@@ -7,8 +7,18 @@ r = redis.StrictRedis(host='redis', decode_responses=True)
 
 app = Flask(__name__)
 
-def get_tweets_for_account(getter_fn, account, limit=10):
-    tweet_scores = getter_fn(account, limit)
+def jsonify_tweets(tweet_getter):
+    ''' decorator that will raise a KeyError if a company does not exist '''
+    @wraps(tweet_getter)
+    def wrapper(*args, **kwargs):
+        result = tweet_getter(*args, **kwargs)
+        print('res', result)
+        return jsonify({ 'ids': [tweet_id for tweet_id, tweet_score in result] })
+
+    return wrapper
+
+def get_tweets_for_account(getter_fn, *args):
+    tweet_scores = getter_fn(*args)
     return jsonify({ 'ids': [tweet_id for tweet_id, tweet_score in tweet_scores] })
 
 @app.errorhandler(KeyError)
@@ -29,10 +39,21 @@ def get_companies_details():
 
     return jsonify({ 'companies': companies_details })
 
+@app.route("/company/<account>/length")
+def get_number_of_tweets(account):
+    return jsonify({ 'length': db.get_number_of_tweets(r, account) })
+
+@app.route("/company/<account>")
+@jsonify_tweets
+def get_tweets(account):
+    return db.get_tweets_timeline(r, account)
+
 @app.route("/company/<account>/best")
+@jsonify_tweets
 def get_best_tweets(account):
-    return get_tweets_for_account(partial(db.get_worst_tweets, r), account)
+    return db.get_best_tweets(r, account, limit=10)
 
 @app.route("/company/<account>/worst")
+@jsonify_tweets
 def get_worst_tweets(account):
-    return get_tweets_for_account(partial(db.get_best_tweets, r), account) 
+    return db.get_worst_tweets(r, account, limit=10)
