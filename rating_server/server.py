@@ -1,11 +1,14 @@
 from flask import Flask, jsonify
 from functools import wraps
-from lib import db
 import redis
+from flask_cors import CORS
+
+from lib import db
 
 r = redis.StrictRedis(host='redis', decode_responses=True)
 
 app = Flask(__name__)
+cors = CORS(app)
 
 def jsonify_tweets(tweet_getter):
     ''' decorator that will raise a KeyError if a company does not exist '''
