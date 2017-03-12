@@ -1,5 +1,5 @@
 while [ 1 ]
 do
     python3 -m sync_service sync
-    sleep 10
+    sleep 43200
 done
