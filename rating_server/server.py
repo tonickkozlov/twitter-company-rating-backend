@@ -35,7 +35,13 @@ def get_companies_details():
     companies_details = []
 
     for account in accounts:
+
+        number_of_tweets = db.get_number_of_tweets(r, account)
+        if number_of_tweets < 500: # TODO: Replace me with env constant
+            continue
+
         company_details = db.get_company_details(r, account)
+        company_details['number_of_tweets'] = number_of_tweets
         company_details['score'] = db.get_company_score(r, account)
         companies_details.append(company_details)
 
