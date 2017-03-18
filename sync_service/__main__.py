@@ -2,6 +2,7 @@ import sys
 import redis
 import fileinput
 from itertools import chain
+from random import shuffle
 
 from lib.api import api
 from lib import db
@@ -28,7 +29,9 @@ if sys.argv[1] == 'init':
 
 elif sys.argv[1] == 'sync':
     # process all companies if params are not given
-    companies = { sys.argv[2] } if len(sys.argv) > 2 else db.get_companies(r)
+    companies = [ sys.argv[2] ] if len(sys.argv) > 2 else list(db.get_companies(r))
+
+    shuffle(companies)
 
     sync_results = [sync_tweets(api, r, account) for account in companies]
 

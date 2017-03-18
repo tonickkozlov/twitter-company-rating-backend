@@ -17,7 +17,7 @@ def roundrobin(*iterables):
             pending -= 1
             nexts = cycle(islice(nexts, pending))
 
-def sync_tweets(api, redis_client, account, limit=1000):
+def sync_tweets(api, redis_client, account, limit=100000):
     ''' will fetch max of `limit` tweets from Twitter mentioning `@account`,
     analyze them and write to db '''
 

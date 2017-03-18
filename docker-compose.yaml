@@ -35,6 +35,3 @@ services:
     container_name: redis
     volumes:
       - ./redis_data:/data
-    ports:
-      - "6379:6379"
-
