@@ -96,8 +96,6 @@ def write_tweet(redis_client, account, tweet, tweet_score):
     # keep on instance of a tweet list sorted by id, and another one - by score
     redis_client.zadd('tweetsabout:{0}'.format(account), tweet_data['id'], tweet_data['id'])
     redis_client.zadd('tweetscores:{0}'.format(account), tweet_score, tweet_data['id'])
-    # TODO: do not store original tweets?
-    redis_client.hmset('tweet:{0}'.format(tweet_data['id']), tweet_data)
 
 def get_tweet(redis_client, tweet_id):
     fields = ['id', 'text']
