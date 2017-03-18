@@ -38,5 +38,8 @@ def sync_tweets(api, redis_client, account, limit=1000):
             pipe.execute()
             yield { 'account': account, 'tweet': tweet, 'score': score, 'removed': tweets_to_remove }
 
-    db.update_company_overall_score(redis_client, account)
-    print('score updated for', account)
+    try: 
+        db.update_company_overall_score(redis_client, account)
+        print('score updated for', account)
+    except Exception as e:
+        print('error', e)

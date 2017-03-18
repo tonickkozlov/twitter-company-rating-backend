@@ -10,6 +10,9 @@ from lib import db
 
 def add_company(db_instance, company_name):
     ' will find company details by `company_name` and write to db '
-    company = twitter.get_company_account(api, company_name)
-    db.write_company(db_instance, company)
-    print('{0} => {1}'.format(company_name, company.name))
+    try:
+        company = twitter.get_company_account(api, company_name)
+        db.write_company(db_instance, company)
+        print('{0} => {1}, @{2}'.format(company_name, company.name, company.screen_name))
+    except Exception as e:
+        print('exception', e)

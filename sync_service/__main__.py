@@ -1,6 +1,7 @@
 import sys
 import redis
 import fileinput
+from itertools import chain
 
 from lib.api import api
 from lib import db
@@ -10,7 +11,7 @@ from .sync_tweets import sync_tweets, roundrobin
 
 def usage():
     print('Usage:\n'
-            'python3 -m sync_service initialize companies.txt\n'
+            'python3 -m sync_service init companies.txt\n'
             'python3 -m sync_service sync')
 
 if len(sys.argv) < 2:
@@ -18,7 +19,7 @@ if len(sys.argv) < 2:
 
 r = redis.StrictRedis(host='redis', decode_responses=True)
 
-if sys.argv[1] == 'initialize':
+if sys.argv[1] == 'init':
     del sys.argv[1] # required for following fileinput
 
     for line in fileinput.input():
@@ -31,7 +32,7 @@ elif sys.argv[1] == 'sync':
 
     sync_results = [sync_tweets(api, r, account) for account in companies]
 
-    for result in roundrobin(*sync_results):
+    for result in chain(*sync_results):
         print('============================================================')
         print('> account', result['account'])
         print('------------------------------')

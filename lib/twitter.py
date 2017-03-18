@@ -52,7 +52,7 @@ def get_company_account(api, company_name):
 
     # if finding a perfect match failed - ask user for best choice,
     # provide assistance with edit distance
-    edit_distances = [edit_distance(company_name.lower(), candidate.name.lower()) for candidate in candidates]
+    edit_distances = [edit_distance(company_name.lower(), candidate.screen_name.lower()) for candidate in candidates]
     default_answer = edit_distances.index(min(edit_distances))
 
     return candidates[default_answer]
