@@ -2,6 +2,7 @@ import tweepy
 import time
 import sys
 import random
+from math import inf
 from nltk.metrics.distance import edit_distance
 
 ''' Twitter API helpers (via tweepy) '''
@@ -27,7 +28,7 @@ def get_cursored_data(endpoint, *args, **kwargs):
             break
 
 
-def get_tweets_about_company(api, account, since_id=0, limit=1000, **kwargs):
+def get_tweets_about_company(api, account, since_id=0, limit=inf, **kwargs):
     ' will give out tweets for ``account`` starting with ``since_id``, and will give out max of ``limit`` results'
     tweets_processed = 0
     for tweet in (get_cursored_data(api.search,

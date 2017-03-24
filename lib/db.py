@@ -39,7 +39,12 @@ def get_company_details(redis_client, account):
 @check_account_exists
 def get_company_score(redis_client, account):
     ''' will get company score from db '''
-    return redis_client.get('companyscore:{0}'.format(account))
+    return float(redis_client.get('companyscore:{0}'.format(account)) or 0)
+
+@check_account_exists
+def set_company_score(redis_client, account, score):
+    ''' will get company score from db '''
+    return redis_client.set('companyscore:{0}'.format(account), score)
 
 @check_account_exists
 def get_company_overall_score(redis_client, account):
@@ -57,11 +62,11 @@ def update_company_overall_score(redis_client, account):
 
 @check_account_exists
 def get_best_tweets(redis_client, account, limit=10):
-    return redis_client.zrevrangebyscore('tweetscores:{0}'.format(account), 'inf', '-inf', withscores=True, start=0, num=limit)
+    return redis_client.zrevrangebyscore('tweetscores:{0}'.format(account), 'inf', 0, withscores=True, start=0, num=limit)
 
 @check_account_exists
 def get_worst_tweets(redis_client, account, limit=10):
-    return redis_client.zrangebyscore('tweetscores:{0}'.format(account), '-inf', 'inf', withscores=True, start=0, num=limit)
+    return redis_client.zrangebyscore('tweetscores:{0}'.format(account), '-inf', 0, withscores=True, start=0, num=limit)
 
 @check_account_exists
 def get_number_of_tweets(redis_client, account):
@@ -69,10 +74,10 @@ def get_number_of_tweets(redis_client, account):
     return redis_client.zcount('tweetsabout:{0}'.format(account), '-inf', 'inf')
 
 @check_account_exists
-def get_tweets_timeline(redis_client, account, limit=None):
+def get_tweets_timeline(redis_client, account, limit=None, withscores=True):
     ''' will get ids of tweets in their creation order '''
-    limiting_params = { 'start': 0, 'limit': limit } if limit else {}
-    return redis_client.zrangebyscore('tweetsabout:{0}'.format(account), '-inf', 'inf', withscores=True, **limiting_params)
+    limiting_params = { 'start': 0, 'num': limit } if limit else {}
+    return redis_client.zrangebyscore('tweetsabout:{0}'.format(account), '-inf', 'inf', withscores=withscores, **limiting_params)
 
 @check_account_exists
 def remove_tweets(redis_client, account, *tweets):
@@ -88,25 +93,16 @@ def write_tweet(redis_client, account, tweet, tweet_score):
         if `remove_oldest` is set, will erase the olders tweet '''
 
     tweet_data = {
-        'id': tweet.id,
-        'text': tweet.text,
-        'entities': json.dumps(tweet.entities),
+        'id': tweet.id
     }
 
     # keep on instance of a tweet list sorted by id, and another one - by score
     redis_client.zadd('tweetsabout:{0}'.format(account), tweet_data['id'], tweet_data['id'])
     redis_client.zadd('tweetscores:{0}'.format(account), tweet_score, tweet_data['id'])
 
-def get_tweet(redis_client, tweet_id):
-    fields = ['id', 'text']
-    id, text = redis_client.hmget('tweet:{0}'.format(tweet_id), fields)
-    return {'id': id, 'text': text} 
-
 @check_account_exists
-def get_tweet_count(redis_client, account):
-    ' will return count of tweets that exist in the db for ``company``'
-
-    return redis_client.zcount('tweetsby:{0}'.format(account), 0, 'inf')
+def get_tweet_score(redis_client, account, tweet_id):
+    return redis_client.zscore('tweetscores:{0}'.format(account), tweet_id)
 
 @check_account_exists
 def get_max_tweet_id(redis_client, account):

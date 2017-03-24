@@ -13,7 +13,7 @@ def get_sentiment_score(text, entities):
     # hash tags and camelCase words do not contribute to overall tweet score.
     # So try to extract data from entities and dump it in the end od tweet's text to 
     # get them analyzed by Vader
-    hashtags = u' '.join([camel_case_split(hashtag['text']) for hashtag in entities['hashtags']])
+    hashtags = u' '.join([camel_case_split(hashtag['text']) for hashtag in entities['hashtags']]) if entities else u''
 
     return sid.polarity_scores(text + ' ' + hashtags)['compound']
 
