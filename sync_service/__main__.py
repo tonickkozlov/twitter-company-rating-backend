@@ -2,13 +2,17 @@ import sys
 import redis
 import fileinput
 from itertools import chain
-from random import shuffle
+from random import sample
 
 from lib.api import api
 from lib import db
 
 from .init_companies import add_company
 from .sync_tweets import sync_tweets, roundrobin
+
+N_TWEETS_PER_RUN=500
+MAX_TWEETS=10000
+N_COMPANIES_PER_RUN=10
 
 def usage():
     print('Usage:\n'
@@ -31,19 +35,19 @@ elif sys.argv[1] == 'sync':
     # process all companies if params are not given
     companies = [ sys.argv[2] ] if len(sys.argv) > 2 else list(db.get_companies(r))
 
-    shuffle(companies)
+    sample(companies, N_COMPANIES_PER_RUN)
 
-    sync_results = [sync_tweets(api, r, account) for account in companies]
+    sync_results = [sync_tweets(
+        api,
+        r,
+        account,
+        limit=N_TWEETS_PER_RUN,
+        max_tweets=MAX_TWEETS
+        )
+        for account in companies ]
 
     for result in chain(*sync_results):
-        print('============================================================')
-        print('> account', result['account'])
-        print('------------------------------')
-        print(result['tweet'].id)
-        print(result['tweet'].text.replace('\n', ''))
-        print('------------------------------')
-        print('> score', result['score'])
-        print('> removed', result['removed'])
+        print(result['account'], '+', result['tweet'].id, '-', result['removed'])
 else:
     usage()
 
