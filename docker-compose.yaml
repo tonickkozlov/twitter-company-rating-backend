@@ -4,7 +4,7 @@ services:
     build: rating_server
     image: rating_server:v1.0
     container_name: rating_server
-    entrypoint: gunicorn -b 0.0.0.0:5000 -w 4 rating_server:app
+    command: gunicorn -b 0.0.0.0:5000 -w 4 rating_server:app
     ports:
       - "5000:5000"
     stdin_open: true 
@@ -19,7 +19,7 @@ services:
     build: sync_service
     image: sync_service:v1.0
     container_name: sync_service
-    entrypoint: python3 -m sync_service sync
+    command: python3 -m sync_service sync
     restart: always
     environment:
       - PYTHONIOENCODING=utf-8
