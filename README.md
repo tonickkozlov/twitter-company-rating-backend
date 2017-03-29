@@ -2,7 +2,11 @@
 
 This project aims to aggregate company customer satisfaction score based on mentions of company's account on Twitter and textual analysis.
 
-Current implementation aggregates rating for some companies from the Fortune 500 list, and can be found [here](http://tinyurl.com/l6axna9).
+![](img/example_best.png)
+
+![](img/example_worst.png)
+
+Current working instance aggregates rating for some companies from the Fortune 500 list, and can be found [here](http://tinyurl.com/l6axna9).
 
 # Implementation
 
